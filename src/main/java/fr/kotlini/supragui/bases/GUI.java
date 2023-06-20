@@ -1,6 +1,7 @@
 package fr.kotlini.supragui.bases;
 
 import fr.kotlini.supragui.InvHandler;
+import fr.kotlini.supragui.classes.SlotPosition;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;

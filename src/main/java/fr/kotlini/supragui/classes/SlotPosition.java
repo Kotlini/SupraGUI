@@ -31,6 +31,26 @@ public class SlotPosition {
         return column + row * 9;
     }
 
+    public int toSlot(int page, int size) {
+        return (size * page - size) + column + row * 9;
+    }
+
+    public void addColumn(int column) {
+        this.column += column;
+    }
+
+    public void removeColumn(int column) {
+        this.column -= column;
+    }
+
+    public void addRow(int row) {
+        this.row += row;
+    }
+
+    public void removeRow(int row) {
+        this.row -= row;
+    }
+
     private static int getColumn(int slot) {
         return slot % 9;
     }

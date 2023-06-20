@@ -2,6 +2,7 @@ package fr.kotlini.supragui.bases;
 
 import fr.kotlini.supragui.classes.Filler;
 import fr.kotlini.supragui.classes.PatternPage;
+import fr.kotlini.supragui.classes.SlotPosition;
 import fr.kotlini.supragui.classes.builders.ItemBuilder;
 import fr.kotlini.supragui.enums.NavigationPosition;
 import org.bukkit.Bukkit;
@@ -134,6 +135,25 @@ public abstract class MultiGUI extends GUI {
 
     public void setItem(int page, int slot, ItemStack itemStack) {
         setItem(page, slot, itemStack, null);
+    }
+
+    public void lineItem(int page, int row, ItemStack itemStack, Consumer<InventoryClickEvent> handler) {
+        final SlotPosition slotPosition = new SlotPosition(0, row);
+        for (int column = 0; column < 9; column++) {
+            slotPosition.addColumn(1);
+            final int slot = slotPosition.toSlot(page, size);
+            items.put(slot, itemStack);
+
+            if (handler != null) {
+                this.itemHandlers.put(slot, handler);
+            } else {
+                this.itemHandlers.remove(slot);
+            }
+        }
+    }
+
+    public void lineItem(int page, int row, ItemStack itemStack) {
+        lineItem(page, row, itemStack, null);
     }
 
     public void setPatternItem(int slot, ItemStack itemStack, Consumer<InventoryClickEvent> handler) {

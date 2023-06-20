@@ -1,11 +1,14 @@
 package fr.kotlini.supragui.bases;
 
+import fr.kotlini.supragui.classes.Filler;
+import fr.kotlini.supragui.classes.SlotPosition;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -75,6 +78,46 @@ public abstract class SingleGUI extends GUI {
                 this.itemHandlers.remove(slot);
             }
         }
+    }
+
+    public void lineItem(int row, ItemStack itemStack, Consumer<InventoryClickEvent> handler) {
+        final SlotPosition slotPosition = new SlotPosition(0, row);
+        for (int column = 0; column < 9; column++) {
+            slotPosition.addColumn(1);
+
+            items.put(slotPosition.toSlot(), itemStack);
+
+            if (handler != null) {
+                this.itemHandlers.put(slotPosition.toSlot(), handler);
+            } else {
+                this.itemHandlers.remove(slotPosition.toSlot());
+            }
+        }
+    }
+
+    public void lineItem(int row, ItemStack itemStack) {
+        lineItem(row, itemStack, null);
+    }
+
+    public void fillItems(SlotPosition startPos, SlotPosition endPos, List<ItemStack> itemStackList, Consumer<InventoryClickEvent> handler) {
+        final Filler filler = new Filler(startPos, endPos, size, true);
+
+        for (ItemStack itemStack : itemStackList) {
+            final int slot = filler.findEmptySlot(items, 1);
+            if (slot != -1) {
+                items.put(slot, itemStack);
+            }
+
+            if (handler != null) {
+                this.itemHandlers.put(slot, handler);
+            } else {
+                this.itemHandlers.remove(slot);
+            }
+        }
+    }
+
+    public void fillItems(SlotPosition startPos, SlotPosition endPos, List<ItemStack> itemStackList) {
+        fillItems(startPos, endPos, itemStackList, null);
     }
 
     public abstract void putItems();

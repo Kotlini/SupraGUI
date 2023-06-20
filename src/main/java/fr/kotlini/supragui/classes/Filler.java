@@ -16,7 +16,7 @@ public class Filler {
 
     private final int size;
 
-    public Filler(SlotPosition startPos, SlotPosition endPos, int size) {
+    public Filler(SlotPosition startPos, SlotPosition endPos, int size, boolean sorter) {
         this.startPos = startPos;
         this.endPos = endPos;
         this.slots = new LinkedList<>();
@@ -26,7 +26,7 @@ public class Filler {
                 slots.add(new SlotPosition(column, row).toSlot());
             }
         }
-        Collections.sort(slots);
+        if (sorter) Collections.sort(slots);
     }
 
     public SlotPosition getStartPos() {
@@ -39,7 +39,7 @@ public class Filler {
 
     public int findEmptySlot(LinkedHashMap<Integer, ItemStack> items, int page) {
         for (int slot : slots) {
-            if (items.get(((size * page - size) + slot)) == null) return ((size * page - size) + slot);
+            if (items.get((size * page - size) + slot) == null) return (size * page - size) + slot;
         }
         return -1;
     }
@@ -56,7 +56,6 @@ public class Filler {
             }
         }
 
-        System.out.println(it);
         return it;
     }
 
