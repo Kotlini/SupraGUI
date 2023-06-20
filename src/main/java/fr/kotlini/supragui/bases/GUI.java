@@ -68,13 +68,12 @@ public abstract class GUI {
     }
 
     public void handleClick(InventoryClickEvent e) {
-        onClick(e);
-
-        this.clickHandlers.forEach(c -> c.accept(e));
-
         if (this.itemHandlers.get((size * index - size) + e.getRawSlot()) != null) {
             this.itemHandlers.get((size * index - size) + e.getRawSlot()).accept(e);
         }
+
+        onClick(e);
+        this.clickHandlers.forEach(c -> c.accept(e));
     }
 
     protected void onOpen(InventoryOpenEvent event) {

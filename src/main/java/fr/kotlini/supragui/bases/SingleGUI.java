@@ -85,8 +85,6 @@ public abstract class SingleGUI extends GUI {
     public void lineItem(int row, ItemStack itemStack, Consumer<InventoryClickEvent> handler) {
         final SlotPosition slotPosition = new SlotPosition(0, row);
         for (int column = 0; column < 9; column++) {
-            slotPosition.addColumn(1);
-
             items.put(slotPosition.toSlot(), itemStack);
 
             if (handler != null) {
@@ -94,6 +92,8 @@ public abstract class SingleGUI extends GUI {
             } else {
                 this.itemHandlers.remove(slotPosition.toSlot());
             }
+
+            slotPosition.addColumn(1);
         }
     }
 
