@@ -52,6 +52,7 @@ public abstract class MultiGUI extends GUI {
 
     @Override
     public void update() {
+        clear();
         putItems();
         maxPageCountItem = getMaxPageCountItem();
         refresh();
@@ -164,7 +165,7 @@ public abstract class MultiGUI extends GUI {
 
             if (items.get(slot) == null) {
                 items.put(slot, pattern.getItems().get(x));
-                if (pattern.getItemHandlers().get(x) != null) {
+                if (pattern.getItemHandlers().get(x) != null && itemHandlers.get(slot) == null) {
                     itemHandlers.put(slot, pattern.getItemHandlers().get(x));
                 }
             }
@@ -183,6 +184,12 @@ public abstract class MultiGUI extends GUI {
                 navigatePrevious();
             });
         }
+    }
+
+    @Override
+    public void close() {
+        clearCachedDynamicHandlers();
+        super.close();
     }
 
     public void clearCachedDynamicHandlers() {
