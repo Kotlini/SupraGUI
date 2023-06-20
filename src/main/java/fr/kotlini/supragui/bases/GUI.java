@@ -89,12 +89,11 @@ public abstract class GUI {
         InvHandler.put(player.getUniqueId(), this);
     }
 
-    protected void unRegister() {
+    public void unRegister() {
         InvHandler.remove(player.getUniqueId());
     }
 
     public void close() {
-        unRegister();
         player.closeInventory();
     }
 

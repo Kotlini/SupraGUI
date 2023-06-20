@@ -102,6 +102,8 @@ public class InvHandler {
             InvHandler.findMenu(event.getPlayer().getUniqueId()).ifPresent(value -> {
                 if (value.handleClose(event)) {
                     Bukkit.getScheduler().runTask(plugin, () -> value.open(false));
+                } else {
+                    value.unRegister();
                 }
             });
         }
