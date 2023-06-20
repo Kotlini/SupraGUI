@@ -1,5 +1,6 @@
 package fr.kotlini.supragui.bases;
 
+import fr.kotlini.supragui.classes.Button;
 import fr.kotlini.supragui.classes.Filler;
 import fr.kotlini.supragui.classes.SlotPosition;
 import org.bukkit.Bukkit;
@@ -8,6 +9,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -118,6 +120,23 @@ public abstract class SingleGUI extends GUI {
 
     public void fillItems(SlotPosition startPos, SlotPosition endPos, List<ItemStack> itemStackList) {
         fillItems(startPos, endPos, itemStackList, null);
+    }
+
+    public void fillItems(SlotPosition startPos, SlotPosition endPos, Collection<Button> buttons) {
+        final Filler filler = new Filler(startPos, endPos, size, true);
+
+        for (Button button : buttons) {
+            final int slot = filler.findEmptySlot(items, 1);
+            if (slot != -1) {
+                items.put(slot, button.getItemStack());
+            }
+
+            if (button.getHandler() != null) {
+                this.itemHandlers.put(slot, button.getHandler());
+            } else {
+                this.itemHandlers.remove(slot);
+            }
+        }
     }
 
     public abstract void putItems();
