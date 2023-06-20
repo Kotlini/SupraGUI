@@ -53,7 +53,7 @@ public abstract class MultiGUI extends GUI {
 
     @Override
     public void update() {
-        clear();
+        clear(true);
         putItems();
         maxPageCountItem = getMaxPageCountItem();
         refresh();
@@ -70,7 +70,7 @@ public abstract class MultiGUI extends GUI {
                 inv = Bukkit.createInventory(null, size, title);
             } else {
                 inv = inventory;
-                clear();
+                clear(false);
             }
         }
 
@@ -140,7 +140,7 @@ public abstract class MultiGUI extends GUI {
     public void lineItem(int page, int row, ItemStack itemStack, Consumer<InventoryClickEvent> handler) {
         final SlotPosition slotPosition = new SlotPosition(0, row);
         for (int column = 0; column < 9; column++) {
-            slotPosition.addColumn(1);
+
             final int slot = slotPosition.toSlot(page, size);
             items.put(slot, itemStack);
 
@@ -149,6 +149,8 @@ public abstract class MultiGUI extends GUI {
             } else {
                 this.itemHandlers.remove(slot);
             }
+
+            slotPosition.addColumn(1);
         }
     }
 

@@ -37,6 +37,14 @@ public class Filler {
         return endPos;
     }
 
+    public LinkedList<Integer> getSlots() {
+        return slots;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
     public int findEmptySlot(LinkedHashMap<Integer, ItemStack> items, int page) {
         for (int slot : slots) {
             if (items.get((size * page - size) + slot) == null) return (size * page - size) + slot;

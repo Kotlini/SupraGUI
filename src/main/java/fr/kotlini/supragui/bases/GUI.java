@@ -1,6 +1,7 @@
 package fr.kotlini.supragui.bases;
 
 import fr.kotlini.supragui.InvHandler;
+import fr.kotlini.supragui.classes.Filler;
 import fr.kotlini.supragui.classes.SlotPosition;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -114,15 +115,17 @@ public abstract class GUI {
         open(update);
     }
 
-    public void removeItem(int slot) {
+    public void removeItem(int slot, boolean cache) {
         this.inventory.clear(slot);
-        this.items.remove(slot);
-        this.itemHandlers.remove(slot);
+        if (cache) {
+            this.items.remove(slot);
+            this.itemHandlers.remove(slot);
+        }
     }
 
-    public void removeItems(int... slots) {
+    public void removeItems(boolean cache, int... slots) {
         for (int slot : slots) {
-            removeItem(slot);
+            removeItem(slot, cache);
         }
     }
 
@@ -137,9 +140,13 @@ public abstract class GUI {
                 || (i > size - 11 && i < size - 7) || i > size - 3).toArray();
     }
 
-    public void clear() {
+    public void clearFill(SlotPosition startPos, SlotPosition endPos, boolean cache) {
+        new Filler(startPos, endPos, size, false).getSlots().forEach(slot -> removeItem(slot, cache));
+    }
+
+    public void clear(boolean cache) {
         for (int slot = 0; slot < size; slot++) {
-            removeItem(slot);
+            removeItem(slot, cache);
         }
     }
 
