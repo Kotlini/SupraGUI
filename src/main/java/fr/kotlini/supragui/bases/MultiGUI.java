@@ -205,8 +205,4 @@ public abstract class MultiGUI extends GUI {
     }
 
     public abstract void putItems();
-
-    public List<Integer> getDynamicHandlers() {
-        return dynamicHandlers;
-    }
 }
