@@ -1,9 +1,12 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 plugins {
     id 'java'
+    id 'com.github.johnrengelman.shadow' version '7.1.0'
 }
 
 group = 'fr.kotlini'
-version = '0.0.7'
+version = '1.2.12'
 
 repositories {
     mavenCentral()
@@ -19,6 +22,10 @@ repositories {
 
 dependencies {
     compileOnly "org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT"
+
+    testCompileOnly 'org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT'
+    testImplementation "junit:junit-dep:4.5"
+
 }
 
 def targetJavaVersion = 8
@@ -44,4 +51,22 @@ processResources {
     filesMatching('plugin.yml') {
         expand props
     }
+}
+
+test {
+    useJUnitPlatform()
+
+    maxHeapSize = '1G'
+
+    testLogging {
+        events "failed"
+        exceptionFormat "full"
+    }
+}
+
+tasks.register('testJar', ShadowJar) {
+    archiveClassifier.set("alltests")
+    setArchivesBaseName("SupraGUI-Test.jar")
+    from sourceSets.main.output, sourceSets.test.output
+    configurations = [project.configurations.testRuntimeClasspath]
 }

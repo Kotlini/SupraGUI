@@ -1,58 +1,79 @@
 package fr.kotlini.supragui.bases;
 
-import fr.kotlini.supragui.InvHandler;
 import fr.kotlini.supragui.classes.Filler;
 import fr.kotlini.supragui.classes.SlotPosition;
+import fr.kotlini.supragui.utils.SupraReflection;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
-public abstract class GUI {
+public abstract class GUI implements InventoryHolder {
 
-    protected final Map<Integer, Consumer<InventoryClickEvent>> itemHandlers;
+    protected final Map<Integer, Consumer<InventoryClickEvent>> itemHandlers = new HashMap<>();
 
-    protected final List<Consumer<InventoryOpenEvent>> openHandlers;
+    protected final LinkedHashMap<Integer, ItemStack> items = new LinkedHashMap<>();
 
-    protected final List<Consumer<InventoryCloseEvent>> closeHandlers;
+    protected final List<Consumer<InventoryOpenEvent>> openHandlers = new ArrayList<>();
 
-    protected final List<Consumer<InventoryClickEvent>> clickHandlers;
+    protected final List<Consumer<InventoryCloseEvent>> closeHandlers = new ArrayList<>();
+
+    protected final List<Consumer<InventoryClickEvent>> clickHandlers = new ArrayList<>();
+
+    protected final Inventory inventory;
+
+    protected final UUID uuid;
 
     protected Predicate<Player> closeFilter;
 
-    protected Inventory inventory;
+    protected int index = 1;
 
-    protected final Player player;
+    protected int maxPage = 1;
 
-    protected final int size;
+    public GUI(UUID uuid, Function<InventoryHolder, Inventory> inventoryFunction) {
+        Objects.requireNonNull(inventoryFunction, "inventoryFunction");
+        Inventory inv = inventoryFunction.apply(this);
 
-    protected String title;
+        if (inv.getHolder() != this) {
+            throw new IllegalStateException("Inventory holder is not GUI, found: " + inv.getHolder());
+        }
 
-    protected LinkedHashMap<Integer, ItemStack> items;
+        this.inventory = inv;
+        this.uuid = uuid;
+    }
 
-    protected int index;
+    public GUI(UUID uuid, InventoryType type) {
+        this(uuid, owner -> Bukkit.createInventory(owner, type));
+    }
 
-    protected int maxPage;
+    public GUI(UUID uuid, InventoryType type, String title) {
+        this(uuid, owner -> Bukkit.createInventory(owner, type, title));
+    }
 
-    public GUI(Player player, String title, int size, Predicate<Player> closeFilter, int index, int maxPage) {
-        this.player = player;
-        this.itemHandlers = new HashMap<>();
-        this.openHandlers = new ArrayList<>();
-        this.closeHandlers = new ArrayList<>();
-        this.clickHandlers = new ArrayList<>();
-        this.title = title;
-        this.size = size;
-        this.closeFilter = closeFilter;
-        this.maxPage = maxPage;
+    public GUI(UUID uuid, String title, int size) {
+        this(uuid, owner -> Bukkit.createInventory(owner, size, title));
+    }
+
+    public GUI(UUID uuid, int size) {
+        this(uuid, owner -> Bukkit.createInventory(owner, size));
+    }
+
+    public GUI(UUID uuid, String title, int size, int index, int maxPage) {
+        this(uuid, owner -> Bukkit.createInventory(owner, size, title));
         this.index = index;
-        this.items = new LinkedHashMap<>();
+        this.maxPage = maxPage;
     }
 
     public void handleOpen(InventoryOpenEvent e) {
@@ -69,8 +90,8 @@ public abstract class GUI {
     }
 
     public void handleClick(InventoryClickEvent e) {
-        if (this.itemHandlers.get((size * index - size) + e.getRawSlot()) != null) {
-            this.itemHandlers.get((size * index - size) + e.getRawSlot()).accept(e);
+        if (this.itemHandlers.get((getSize() * index - getSize()) + e.getRawSlot()) != null) {
+            this.itemHandlers.get((getSize() * index - getSize()) + e.getRawSlot()).accept(e);
         }
 
         onClick(e);
@@ -86,33 +107,14 @@ public abstract class GUI {
     protected void onClose(InventoryCloseEvent event) {
     }
 
-    protected void register() {
-        InvHandler.put(player.getUniqueId(), this);
-    }
-
-    public void unRegister() {
-        InvHandler.remove(player.getUniqueId());
-    }
-
-    public void close() {
-        player.closeInventory();
-    }
-
     public void open(boolean update) {
         if (update) {
-            update();
+            update(true);
         } else {
-            refresh();
+            refresh(true);
         }
-        register();
-        if (inventory != null) {
-            player.openInventory(this.inventory);
-        }
-    }
 
-    public void reOpen(boolean update) {
-        close();
-        open(update);
+        getPlayer().openInventory(this.inventory);
     }
 
     public void removeItem(int slot, boolean cache) {
@@ -130,32 +132,79 @@ public abstract class GUI {
     }
 
     public int[] getBorders() {
-        return IntStream.range(0, size).filter(i -> size < 27 || i < 9
-                || i % 9 == 0 || (i - 8) % 9 == 0 || i > size - 9).toArray();
+        return IntStream.range(0, getSize()).filter(i -> getSize() < 27 || i < 9
+                || i % 9 == 0 || (i - 8) % 9 == 0 || i > getSize() - 9).toArray();
     }
 
     public int[] getCorners() {
-        return IntStream.range(0, size).filter(i -> i < 2 || (i > 6 && i < 10)
-                || i == 17 || i == size - 18
-                || (i > size - 11 && i < size - 7) || i > size - 3).toArray();
+        return IntStream.range(0, getSize()).filter(i -> i < 2 || (i > 6 && i < 10)
+                || i == 17 || i == getSize() - 18
+                || (i > getSize() - 11 && i < getSize() - 7) || i > getSize() - 3).toArray();
     }
 
     public void clearFill(SlotPosition startPos, SlotPosition endPos, boolean cache) {
-        new Filler(startPos, endPos, size, false).getSlots().forEach(slot -> removeItem(slot, cache));
+        new Filler(startPos, endPos, getSize(), false).getSlots().forEach(slot -> removeItem(slot, cache));
     }
 
     public void clear(boolean cache) {
-        for (int slot = 0; slot < size; slot++) {
-            removeItem(slot, cache);
+        inventory.clear();
+        if (cache) {
+            clickHandlers.clear();
+            items.clear();
+            itemHandlers.clear();
+            openHandlers.clear();
+            closeHandlers.clear();
         }
     }
 
-    public abstract void update();
+    public void rename(String title) {
+        if (inventory.getName().equalsIgnoreCase("container.crafting")) return;
+        final Player player = getPlayer();
 
-    public abstract void refresh();
+        try {
+            SupraReflection.sendPacket(player, SupraReflection.instanceClass(SupraReflection.nmsClass("PacketPlayOutOpenWindow"),
+                    1, SupraReflection.fieldClass(SupraReflection.nmsClass("Container"),
+                            SupraReflection.fieldClass(SupraReflection.nmsClass("EntityHuman"),
+                                    SupraReflection.getHandlePlayer(player), "activeContainer"), "windowId"),
+                    "minecraft:chest", SupraReflection.instanceClass(SupraReflection.nmsClass("ChatMessage"), 0,
+                            title, new Object[0]), getSize()));
+        } catch (IllegalArgumentException | IllegalAccessException | InstantiationException |
+                 InvocationTargetException | ClassNotFoundException | NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        }
+        player.updateInventory();
+    }
+
+    public void reSize(int size) {
+        if (inventory.getName().equalsIgnoreCase("container.crafting")) return;
+        final Player player = getPlayer();
+
+        try {
+            SupraReflection.sendPacket(player, SupraReflection.instanceClass(SupraReflection.nmsClass("PacketPlayOutOpenWindow"),
+                    1, SupraReflection.fieldClass(SupraReflection.nmsClass("Container"),
+                            SupraReflection.fieldClass(SupraReflection.nmsClass("EntityHuman"),
+                                    SupraReflection.getHandlePlayer(player), "activeContainer"), "windowId"),
+                    "minecraft:chest", SupraReflection.instanceClass(SupraReflection.nmsClass("ChatMessage"), 0,
+                            getTitle(), new Object[0]), size));
+        } catch (IllegalArgumentException | IllegalAccessException | InstantiationException |
+                 InvocationTargetException | ClassNotFoundException | NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        }
+        player.updateInventory();
+    }
+
+    public abstract void update(boolean open);
+
+    public abstract void refresh(boolean open);
+
+    public abstract void refresh(SlotPosition startPos, SlotPosition endPos, boolean cache);
 
     public Map<Integer, Consumer<InventoryClickEvent>> getItemHandlers() {
         return itemHandlers;
+    }
+
+    public LinkedHashMap<Integer, ItemStack> getItems() {
+        return items;
     }
 
     public List<Consumer<InventoryOpenEvent>> getOpenHandlers() {
@@ -178,37 +227,10 @@ public abstract class GUI {
         this.closeFilter = closeFilter;
     }
 
-    public Inventory getInventory() {
-        return inventory;
-    }
-
-    public void setInventory(Inventory inventory) {
-        this.inventory = inventory;
-    }
-
-    public Player getPlayer() {
-        return player;
-    }
-
-    public int getSize() {
-        return size;
-    }
-
     public String getTitle() {
-        return title;
+        return getInventory().getTitle();
     }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public LinkedHashMap<Integer, ItemStack> getItems() {
-        return items;
-    }
-
-    public void setItems(LinkedHashMap<Integer, ItemStack> items) {
-        this.items = items;
-    }
 
     public int getIndex() {
         return index;
@@ -224,5 +246,18 @@ public abstract class GUI {
 
     public void setMaxPage(int maxPage) {
         this.maxPage = maxPage;
+    }
+
+    @Override
+    public Inventory getInventory() {
+        return inventory;
+    }
+
+    public int getSize() {
+        return getInventory().getSize();
+    }
+
+    public Player getPlayer() {
+        return Bukkit.getPlayer(uuid);
     }
 }

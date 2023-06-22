@@ -52,10 +52,6 @@ public class Filler {
         return -1;
     }
 
-    public int countOfSlot() {
-        return slots.size();
-    }
-
     public int getValidItems(LinkedHashMap<Integer, ItemStack> items, int maxPage) {
         int it = 0;
         for (int page = 1; page <= maxPage; page++) {
@@ -65,6 +61,10 @@ public class Filler {
         }
 
         return it;
+    }
+
+    public int countOfSlot() {
+        return slots.size();
     }
 
     public boolean isInFilling(int slot, int page) {

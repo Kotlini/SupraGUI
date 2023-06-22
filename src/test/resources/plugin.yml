@@ -1,0 +1,7 @@
+name: SurpaGUI
+version: '0.0.1'
+author: Kotlini
+main: fr.kotlini.supragui.Main
+commands:
+  test:
+    description: test unit
