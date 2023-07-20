@@ -81,11 +81,9 @@ public abstract class MultiGUI extends GUI {
 
     @Override
     public void refresh(SlotPosition startPos, SlotPosition endPos, boolean cache) {
-        final  Filler fill = new Filler(startPos, endPos, getSize(), false);
-
-        fill.getSlots().forEach(slot -> removeItem(slot, cache));
-        fill.getSlots().forEach(slot -> {
-            final int newSlot = (getSize() * index - getSize()) + slot;
+        new Filler(startPos, endPos, getSize(), false).getSlots().forEach(slot -> {
+            removeItem(slot, cache);
+            final int newSlot = (getSize() * index - getSize()) + slot - 1;
             if (items.get(newSlot) != null) {
                 inventory.setItem(slot, items.get(newSlot));
             }
