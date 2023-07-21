@@ -21,7 +21,7 @@ public class Filler {
         this.endPos = endPos;
         this.slots = new LinkedList<>();
         this.size = size;
-        for (int column = startPos.getColumn(); column < endPos.getColumn(); column++) {
+        for (int column = startPos.getColumn(); column <= endPos.getColumn(); column++) {
             for (int row = startPos.getRow(); row <= endPos.getRow(); row++) {
                 slots.add(new SlotPosition(column, row).toSlot());
             }

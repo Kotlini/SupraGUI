@@ -43,14 +43,12 @@ public abstract class SingleGUI extends GUI {
 
     @Override
     public void refresh(SlotPosition startPos, SlotPosition endPos, boolean cache) {
-        new Filler(startPos, endPos, getSize(), false).getSlots().forEach(slot -> {
-            final int s = slot - 1;
-            removeItem(s, cache);
-            if (items.get(s) != null) {
-                inventory.setItem(s, items.get(slot));
+        new Filler(startPos, endPos, getSize(), true).getSlots().forEach(slot -> {
+            removeItem(slot, cache);
+            if (items.get(slot) != null) {
+                inventory.setItem(slot, items.get(slot));
             }
         });
-
         getPlayer().updateInventory();
     }
 
