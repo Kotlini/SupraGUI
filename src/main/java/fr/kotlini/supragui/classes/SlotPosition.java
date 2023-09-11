@@ -2,6 +2,14 @@ package fr.kotlini.supragui.classes;
 
 public class SlotPosition {
 
+    public static SlotPosition of(int column, int row) {
+        return new SlotPosition(column, row);
+    }
+
+    public static int of(int column, int row, int page, int size) {
+        return new SlotPosition(column, row).toSlot(page, size);
+    }
+
     private int column;
 
     private int row;

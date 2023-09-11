@@ -3,6 +3,7 @@ package fr.kotlini.supragui.bases;
 import fr.kotlini.supragui.classes.Filler;
 import fr.kotlini.supragui.classes.SlotPosition;
 import fr.kotlini.supragui.utils.SupraReflection;
+import fr.kotlini.supragui.utils.TitleUpdater;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -158,21 +159,7 @@ public abstract class GUI implements InventoryHolder {
     }
 
     public void rename(String title) {
-        if (inventory.getName().equalsIgnoreCase("container.crafting")) return;
-        final Player player = getPlayer();
-
-        try {
-            SupraReflection.sendPacket(player, SupraReflection.instanceClass(SupraReflection.nmsClass("PacketPlayOutOpenWindow"),
-                    1, SupraReflection.fieldClass(SupraReflection.nmsClass("Container"),
-                            SupraReflection.fieldClass(SupraReflection.nmsClass("EntityHuman"),
-                                    SupraReflection.getHandlePlayer(player), "activeContainer"), "windowId"),
-                    "minecraft:chest", SupraReflection.instanceClass(SupraReflection.nmsClass("ChatMessage"), 0,
-                            title, new Object[0]), getSize()));
-        } catch (IllegalArgumentException | IllegalAccessException | InstantiationException |
-                 InvocationTargetException | ClassNotFoundException | NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        }
-        player.updateInventory();
+        TitleUpdater.update(getPlayer(), title);
     }
 
     public void reSize(int size) {
