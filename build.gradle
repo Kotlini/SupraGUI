@@ -1,9 +1,6 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-
 plugins {
     id 'java'
     id 'maven-publish'
-    id 'com.github.johnrengelman.shadow' version '7.1.0'
 }
 
 group = 'fr.kotlini'
@@ -65,7 +62,9 @@ test {
     }
 }
 
-tasks.register('testJar', ShadowJar) {
+tasks.register('testJar') {
+    archiveClassifier.set("alltests")
+    setArchivesBaseName("SupraGUI-Test.jar")
     from sourceSets.main.output, sourceSets.test.output
     configurations = [project.configurations.testRuntimeClasspath]
 }
